@@ -2,15 +2,16 @@
 import heapq
 
 def children(point,roads):
+    j = roads[point]
     lst = []
-    for link in point.links:
-        lst.append((roads[link.target],link.distance))
+    for link in j.links:
+        lst.append((link.target,link.distance))
     return lst
 
 #maxSeen number of maximum
 def ucs_aux(node, goal, roads,maxAdjacents):
     # Initialize the queue with the root node
-    q = [(0, node, [])]
+    q = [(0, node.index, [])]
     # The list of seen items
     seen = {}
     # While the queue isn't empty
@@ -42,5 +43,5 @@ def ucs(start,goal,roads):
 
 def nearest(v,maxAdjacents,roads):
     dict = ucs_aux(v,None,roads,maxAdjacents+1)[1]
-    del dict[v]
+    del dict[v.index]
     return [(k,v[1]) for k,v in dict.iteritems()]

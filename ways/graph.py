@@ -69,7 +69,7 @@ def _make_junction(i_str, lat_str, lon_str, *link_row):
 
 
 @tools.timed
-def load_map_from_csv(filename='tlv2.csv', start=0, count=sys.maxsize):
+def load_map_from_csv(filename='tlv.csv', start=0, count=sys.maxsize):
     '''returns graph, encoded as an adjacency list
     @param slice_params can be used to cut part of the file
     example: load_map_from_csv(start=50000, count=50000))

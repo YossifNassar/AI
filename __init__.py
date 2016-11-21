@@ -63,4 +63,4 @@ if __name__ == '__main__':
     roads = load_map_from_csv(start=0, count=10)
     path = UC.nearest(roads[0], 2,roads)
     # path = UC.ucs(roads[1],roads[3],roads)
-    print_path (path)
+    print (path)

@@ -41,9 +41,6 @@ def ucs(start,goal,roads):
     return ucs_aux(start,goal,roads,0)[0]
 
 def nearest(v,maxAdjacents,roads):
-    lst = ucs_aux(v,None,roads,maxAdjacents+1)[1]
-    l = []
-    for u in lst:
-        if not u.index == v.index:
-            l.append(u)
-    return l
+    dict = ucs_aux(v,None,roads,maxAdjacents+1)[1]
+    del dict[v]
+    return [(k,v[1]) for k,v in dict.iteritems()]

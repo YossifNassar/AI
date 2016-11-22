@@ -5,8 +5,7 @@ import numpy
 import collections
 import datetime
 import UC
-from ways import graph
-import sys
+import pickle
 
 PATHS = 500000
 P = 0.99
@@ -32,14 +31,10 @@ def random_node(roads):
 
 
 def build_path(node, roads, allNodes):
-    path = [node]
     while (flip_coin() == 1) and (node.links != []):
         allNodes.append(node.index)
         link = random.choice(node.links)
         node = roads[link.target]
-        path.append(node)
-
-    return path
 
 
 def print_path(path):
@@ -51,36 +46,33 @@ def print_path(path):
 
 def buildCentrality():
     roads = load_map_from_csv()
-    paths = []
     allNodes = []
-
-    print datetime.datetime.now()
+    start_time= datetime.datetime.now()
 
     for i in range(PATHS):
         print str((float(i)/PATHS)*100) +"% percent done... Now in path number: " + str(i)
         node = random_node(roads)
-        path = build_path(node, roads, allNodes)
-        paths.append(path)
+        build_path(node, roads, allNodes)
 
     f = open('centrality.csv', 'w');
     for t in collections.Counter(allNodes).most_common():
         f.write(str(t[0]) +"," + str(t[1]) + "\n")
     f.close()
-    print datetime.datetime.now()
 
 
 if __name__ == '__main__':
     # buildCentrality()
     roads = load_map_from_csv()
-    path =UC.nearest(roads[0], 2,roads)
+    # path =UC.nearest(roads[0], 10,roads)
     # path = UC.ucs(roads[1],roads[3],roads)
-    print (path)
-    # lst = load_centrality()
-    # centralsCount = K*len(lst)
-    # centrals=lst[:int(centralsCount)]
-    # print centrals[0]
-    # dict={}
+    # print (path)
+    lst = load_centrality()
+    centralsCount = K*len(lst)
+    centrals=lst[:int(centralsCount)]
+    dict={}
     # UC.nearest(roads[int(0)], 3, roads)
 
-    # for central in centrals:
-    #     dict[central[0]] = UC.nearest(roads[int(central[0])], M*centralsCount,roads)
+    for central in centrals:
+        dict[central[0]] = UC.nearest(roads[int(central[0])], M*centralsCount,roads)
+
+    pickle.dump( dict, open( "abstractSpace.pkl", "wb" ) )

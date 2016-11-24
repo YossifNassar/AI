@@ -9,6 +9,7 @@ We just parse input and call methods from other modules.
 
 import UC
 from ways import load_map_from_csv
+import utils
 
 def base(source, target):
     'call function to find path using uniform cost, and return list of indices'
@@ -18,13 +19,21 @@ def base(source, target):
     
 def betterWaze(source, target,abstractMap=None):
     'call function to find path using better ways algorithm, and return list of indices'
-    if not abstractMap:
-        raise NotImplementedError # You should load the map you were asked to pickle
-        # Note: pickle might give you an error for the namedtuples, even if they
-        # are imported indirectly from ways.graph. You might need to declare, for
-        # example: Link = ways.graph.Link
-    raise NotImplementedError
-    
+    roads = load_map_from_csv()
+    K=0.005
+    lst = utils.load_centrality()
+    centralsCount = K * len(lst)
+    centrals = lst[:int(centralsCount)]
+    centralsLst = map(lambda x: x[0], centrals)
+    nearestCentral = utils.nearest_central(roads[0], centralsLst, roads)
+    path_a = UC.ucs(roads[int(source)],roads[int(nearestCentral)],roads)
+    nearestCentralAir = utils.nearest_central_air(roads[int(target)], centralsLst, roads)
+    path_b = UC.ucs(roads[int(nearestCentralAir)],roads[int(target)], roads)
+    # path_c = UC.ucs(abstractMap[nearestCentral],abstractMap[nearestCentralAir], abstractMap)
+    # print path_c
+    # print abstractMap[nearestCentral]
+    print  nearestCentral in centralsLst
+    print nearestCentralAir in centralsLst
 
 def dispatch(argv):
     from sys import argv

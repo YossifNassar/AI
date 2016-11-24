@@ -118,15 +118,16 @@ def buildCentrality():
     f.close()
 
 
-def build_abstract_space(centrals,K, roads):
+def build_abstract_space(centrals, roads):
     dict = {}
     # UC.nearest(roads[int(0)], 3, roads)
     for central in centrals:
-        lst = UC.nearest_with_cost(roads[int(central)], M * len(centrals), roads)
+        lst = UC.nearest_with_cost(roads[int(central)], M * len(centrals), roads, centrals)
         abstractLst=[]
         for item in lst:
-            abstractLst.append(graph.AbstractLink(item[1][1],item[0],item[1][0],-1))
-        dict[int(central)] = abstractLst
+            abstractLst.append(graph.AbstractLink(item[1][1],int(item[0]),float(item[1][0]),-1))
+        junc = roads[int(central)]
+        dict[int(central)] = graph.Junction(junc.index,junc.lat,junc.lon, abstractLst)
     pickle.dump(dict, open("abstractSpace.pkl", "wb"))
 
 
@@ -194,4 +195,3 @@ def nearest_central_air(v,centrals,roads):
             minDistance = d
             minIndex = centralIndex
     return minIndex
-

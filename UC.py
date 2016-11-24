@@ -1,15 +1,21 @@
 # Head ends here
 import heapq
+from ways import graph
 
-def children(point,roads):
-    j = roads[point]
+def children(point,roads,centrals=None):
+    j = roads[int(point)]
     lst = []
     for link in j.links:
-        lst.append((link.target,link.distance))
+        if not centrals is None and not link.target in centrals:
+            continue
+        if type(link) is graph.Link:
+            lst.append((link.target,link.distance))
+        else:
+            lst.append((link.target,link.cost))
     return lst
 
 #maxSeen number of maximum
-def ucs_aux(node, goal, roads,maxAdjacents):
+def ucs_aux(node, goal, roads,maxAdjacents,centrals=None):
     # Initialize the queue with the root node
     q = [(0, node.index, [])]
     # The list of seen items
@@ -32,7 +38,7 @@ def ucs_aux(node, goal, roads,maxAdjacents):
                 return (path,seen)
 
         # Loop through the children
-        for child in children(point,roads):
+        for child in children(point,roads,centrals):
             # Calculate the basic cost
             child_cost = child[1]
             # If the child hasn't been seen
@@ -53,7 +59,7 @@ def nearest(v,maxAdjacents,roads):
     return [(k,v[1]) for k,v in dict.iteritems()]
 
 # returns a list of (index,(cost,path))
-def nearest_with_cost(v,maxAdjacents,roads):
-    dict = ucs_aux(v,None,roads,maxAdjacents+1)[1]
+def nearest_with_cost(v,maxAdjacents,roads,centrals=None):
+    dict = ucs_aux(v,None,roads,maxAdjacents+1,centrals)[1]
     del dict[v.index]
     return [(k,v) for k,v in dict.iteritems()]

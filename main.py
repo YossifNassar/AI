@@ -26,14 +26,19 @@ def betterWaze(source, target,abstractMap=None):
     centrals = lst[:int(centralsCount)]
     centralsLst = map(lambda x: x[0], centrals)
     nearestCentral = utils.nearest_central(roads[0], centralsLst, roads)
-    path_a = UC.ucs(roads[int(source)],roads[int(nearestCentral)],roads)
-    nearestCentralAir = utils.nearest_central_air(roads[int(target)], centralsLst, roads)
-    path_b = UC.ucs(roads[int(nearestCentralAir)],roads[int(target)], roads)
-    # path_c = UC.ucs(abstractMap[nearestCentral],abstractMap[nearestCentralAir], abstractMap)
-    # print path_c
-    # print abstractMap[nearestCentral]
-    print  nearestCentral in centralsLst
-    print nearestCentralAir in centralsLst
+
+    # utils.build_abstract_space(centralsLst, roads)
+
+    # path_a = UC.ucs(roads[int(source)],roads[int(nearestCentral)],roads)
+    nearestCentralAir = int(utils.nearest_central_air(roads[int(target)], centralsLst, roads))
+    # path_b = UC.ucs(roads[int(nearestCentralAir)],roads[int(target)], roads)
+    path_c = UC.ucs(abstractMap[nearestCentral],abstractMap[nearestCentralAir], abstractMap)
+    print abstractMap
+    print path_c
+    # print abstractMap[int(nearestCentralAir)]
+    # print  nearestCentral in centralsLst
+    # print nearestCentralAir in centralsLst
+    # print nearestCentralAir
 
 def dispatch(argv):
     from sys import argv

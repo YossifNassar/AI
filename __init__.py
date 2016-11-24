@@ -74,7 +74,7 @@ def build_abstract_space(roads):
 
 def build_data_set(roads):
     pairs = {}
-    f = open('dataSet2.csv', 'w')
+    f = open('dataSet.csv', 'w')
     for i in range(DATA_SET_LENGTH):
         keepDigging = True
         while keepDigging:
@@ -120,9 +120,7 @@ if __name__ == '__main__':
     # print (path)
     # build_abstract_space(roads)
 
-    print datetime.datetime.now()
-    build_data_set(roads)
-    print datetime.datetime.now()
+    # build_data_set(roads)
 
     # print UC.ucs(roads[17998],roads[97121],roads)
-    # test_dataset(roads)
+    test_dataset(roads)

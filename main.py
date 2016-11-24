@@ -13,7 +13,7 @@ from ways import load_map_from_csv
 def base(source, target):
     'call function to find path using uniform cost, and return list of indices'
     roads = load_map_from_csv()
-    return UC.ucs(source,target,roads)
+    return UC.ucs(roads[int(source)],roads[int(target)],roads)
 
     
 def betterWaze(source, target,abstractMap=None):

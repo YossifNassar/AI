@@ -6,7 +6,7 @@ def children(point,roads,centrals=None):
     j = roads[int(point)]
     lst = []
     for link in j.links:
-        if not centrals is None and not link.target in centrals:
+        if centrals and not str(link.target) in centrals:
             continue
         if type(link) is graph.Link:
             lst.append((link.target,link.distance))

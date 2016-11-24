@@ -190,6 +190,8 @@ def nearest_central_air(v,centrals,roads):
     minDistance = utils.air_distance(int(centrals[0]),int(v.index),roads)
     minIndex = centrals[0]
     for centralIndex in centrals:
+        if int(v.index) == int(centralIndex):
+            continue
         d = utils.air_distance(int(centralIndex),int(v.index),roads)
         if d < minDistance:
             minDistance = d

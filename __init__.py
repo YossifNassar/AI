@@ -6,10 +6,11 @@ import collections
 import datetime
 import UC
 import pickle
+import sys
+from ways import graph
 
 PATHS = 500000
 P = 0.99
-K = 0.005
 M = 0.1
 DATA_SET_LENGTH = 20
 DATA_SET_ADGACENTS = 30000
@@ -61,15 +62,17 @@ def buildCentrality():
     f.close()
 
 
-def build_abstract_space(roads):
-    lst = load_centrality()
-    centralsCount = K * len(lst)
-    centrals = lst[:int(centralsCount)]
+def build_abstract_space(centrals,K, roads):
     dict = {}
     # UC.nearest(roads[int(0)], 3, roads)
     for central in centrals:
-        dict[central[0]] = UC.nearest(roads[int(central[0])], M * centralsCount, roads)
+        lst = UC.nearest_with_cost(roads[int(central)], M * centralsCount, roads)
+        abstractLst=[]
+        for item in lst:
+            abstractLst.append(graph.AbstractLink(item[1][1],item[0],item[1][0],-1))
+        dict[central] = abstractLst
     pickle.dump(dict, open("abstractSpace.pkl", "wb"))
+    print dict
 
 
 def build_data_set(roads):
@@ -112,6 +115,32 @@ def test_dataset(roads):
         print "Test Failed!"
 
 
+def find_min(nearestCentrals):
+    minCost = nearestCentrals[0][1][0]
+    id = nearestCentrals[0][0]
+    for item in nearestCentrals:
+        if item[1][0] < minCost:
+            minCost = item[1][0]
+            id = item[0]
+    return id
+
+
+def nearest_central(v, centrals, roads):
+    nearest = UC.nearest_with_cost(v, sys.maxsize, roads)
+    nearestCentrals = filter(lambda pair: str(pair[0]) in centralsLst, nearest)
+    return find_min(nearestCentrals)
+
+def nearest_central_air(v,centrals,roads):
+    minDistance = utils.air_distance(int(centrals[0]),int(v.index),roads)
+    minIndex = centrals[0]
+    for centralIndex in centrals:
+        d = utils.air_distance(int(centralIndex),int(v.index),roads)
+        if d < minDistance:
+            minDistance = d
+            minIndex = centralIndex
+    return minIndex
+
+
 if __name__ == '__main__':
     # buildCentrality()
     roads = load_map_from_csv()
@@ -121,6 +150,18 @@ if __name__ == '__main__':
     # build_abstract_space(roads)
 
     # build_data_set(roads)
-
+    # print UC.nearest_with_cost(roads[0], 2, roads)
     # print UC.ucs(roads[17998],roads[97121],roads)
-    test_dataset(roads)
+    # test_dataset(roads)
+    K=0.005
+    lst = load_centrality()
+    centralsCount = K * len(lst)
+    centrals = lst[:int(centralsCount)]
+    centralsLst = map(lambda x: x[0], centrals)
+
+    # build_abstract_space(centralsLst,K,roads)
+
+    # print UC.nearest_with_cost(roads[0], 2, roads)
+
+    # print nearest_central(roads[0], centralsLst, roads)
+    # print nearest_central_air(roads[0], centralsLst, roads)

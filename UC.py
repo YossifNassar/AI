@@ -46,7 +46,14 @@ def ucs_aux(node, goal, roads,maxAdjacents):
 def ucs(start,goal,roads):
     return ucs_aux(start,goal,roads,0)[0]
 
+# returns a list of (index,path)
 def nearest(v,maxAdjacents,roads):
     dict = ucs_aux(v,None,roads,maxAdjacents+1)[1]
     del dict[v.index]
     return [(k,v[1]) for k,v in dict.iteritems()]
+
+# returns a list of (index,(cost,path))
+def nearest_with_cost(v,maxAdjacents,roads):
+    dict = ucs_aux(v,None,roads,maxAdjacents+1)[1]
+    del dict[v.index]
+    return [(k,v) for k,v in dict.iteritems()]

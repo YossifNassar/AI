@@ -24,8 +24,13 @@ def ucs_aux(node, goal, roads,maxAdjacents):
         # Update the path
         path = path + [point]
         # If we have found the goal, return the point
-        if point == goal or (len(seen) >= maxAdjacents and goal==None):
-            return (path,seen)
+        if goal == None:
+            if len(seen) >= maxAdjacents:
+                return (path,seen)
+        else:
+            if point == goal.index:
+                return (path,seen)
+
         # Loop through the children
         for child in children(point,roads):
             # Calculate the basic cost

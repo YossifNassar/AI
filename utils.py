@@ -1,6 +1,7 @@
 import ways.graph
 from ways import info
 import collections
+import math
 
 def num_of_junctions(roads):
     return len(roads)
@@ -48,6 +49,9 @@ def branch_factors(roads):
     avg = sum / num_of_junctions(roads)
     return [max, min, avg]
 
-
-def questionB():
-    print "Hello world"
+def air_distance(sourceIndex,destIndex,roads):
+    sourceNode = roads[sourceIndex]
+    destNode = roads[destIndex]
+    delta_x = sourceNode.lat - destNode.lat
+    delta_y = sourceNode.lon - destNode.lon
+    return float(math.sqrt( math.pow(delta_x,2) + math.pow(delta_y,2)))

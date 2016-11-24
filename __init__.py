@@ -9,16 +9,20 @@ import pickle
 
 PATHS = 500000
 P = 0.99
-K=0.005
-M=0.1
+K = 0.005
+M = 0.1
+DATA_SET_LENGTH = 20
+DATA_SET_ADGACENTS = 30000
+DATA_SET_OPERATIONS = 200
+
 
 def load_centrality(filename='centrality.csv'):
     import csv
     lst = []
-    with open(filename,'rb') as f:
+    with open(filename, 'rb') as f:
         reader = csv.reader(f)
         for row in reader:
-            lst.append((row[0],row[1]))
+            lst.append((row[0], row[1]))
     return lst
 
 
@@ -47,17 +51,65 @@ def print_path(path):
 def buildCentrality():
     roads = load_map_from_csv()
     allNodes = []
-    start_time= datetime.datetime.now()
-
     for i in range(PATHS):
-        print str((float(i)/PATHS)*100) +"% percent done... Now in path number: " + str(i)
+        print str((float(i) / PATHS) * 100) + "% percent done... Now in path number: " + str(i)
         node = random_node(roads)
         build_path(node, roads, allNodes)
-
     f = open('centrality.csv', 'w');
     for t in collections.Counter(allNodes).most_common():
-        f.write(str(t[0]) +"," + str(t[1]) + "\n")
+        f.write(str(t[0]) + "," + str(t[1]) + "\n")
     f.close()
+
+
+def build_abstract_space(roads):
+    lst = load_centrality()
+    centralsCount = K * len(lst)
+    centrals = lst[:int(centralsCount)]
+    dict = {}
+    # UC.nearest(roads[int(0)], 3, roads)
+    for central in centrals:
+        dict[central[0]] = UC.nearest(roads[int(central[0])], M * centralsCount, roads)
+    pickle.dump(dict, open("abstractSpace.pkl", "wb"))
+
+
+def build_data_set(roads):
+    pairs = {}
+    f = open('dataSet2.csv', 'w')
+    for i in range(DATA_SET_LENGTH):
+        keepDigging = True
+        while keepDigging:
+            id1 = random.choice(roads.keys())
+            id2 = -1
+            if pairs.has_key(id1):
+                continue
+            v = roads[id1]
+            nearest = UC.nearest(v, DATA_SET_ADGACENTS, roads)
+            if not nearest:
+                continue
+            for item in nearest:
+                if len(item[1]) >= DATA_SET_OPERATIONS:
+                    id2 = item[0]
+                    keepDigging = False
+            if not keepDigging:
+                pairs[id1] = id2
+                f.write(str(id1) + "," + str(id2) + "\n")
+    f.close()
+
+
+def test_dataset(roads):
+    passed = True
+    import csv
+    with open('dataSet.csv', 'rb') as f:
+        spamreader = csv.reader(f, delimiter=',', quotechar='|')
+        for row in spamreader:
+            length = len(UC.ucs(roads[int(row[0])], roads[int(row[1])], roads))
+            if length < DATA_SET_OPERATIONS:
+                print length
+                passed = False
+    if passed:
+        print "Test Passed!"
+    else:
+        print "Test Failed!"
 
 
 if __name__ == '__main__':
@@ -66,13 +118,11 @@ if __name__ == '__main__':
     # path =UC.nearest(roads[0], 10,roads)
     # path = UC.ucs(roads[1],roads[3],roads)
     # print (path)
-    lst = load_centrality()
-    centralsCount = K*len(lst)
-    centrals=lst[:int(centralsCount)]
-    dict={}
-    # UC.nearest(roads[int(0)], 3, roads)
+    # build_abstract_space(roads)
 
-    for central in centrals:
-        dict[central[0]] = UC.nearest(roads[int(central[0])], M*centralsCount,roads)
+    print datetime.datetime.now()
+    build_data_set(roads)
+    print datetime.datetime.now()
 
-    pickle.dump( dict, open( "abstractSpace.pkl", "wb" ) )
+    # print UC.ucs(roads[17998],roads[97121],roads)
+    # test_dataset(roads)

@@ -7,9 +7,13 @@ We just parse input and call methods from other modules.
 #do NOT import ways. This should be done from other files
 #simply import your modules and call the appropriate functions
 
+import UC
+from ways import load_map_from_csv
+
 def base(source, target):
     'call function to find path using uniform cost, and return list of indices'
-    raise NotImplementedError
+    roads = load_map_from_csv()
+    return UC.ucs(source,target,roads)
 
     
 def betterWaze(source, target,abstractMap=None):

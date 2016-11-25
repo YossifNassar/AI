@@ -197,3 +197,28 @@ def nearest_central_air(v,centrals,roads):
             minDistance = d
             minIndex = centralIndex
     return minIndex
+
+def base(source,target):
+    roads = load_map_from_csv()
+    return UC.ucs(roads[int(source)],roads[int(target)],roads)
+
+def better_waze(source,target,abstractMap,K):
+    roads = load_map_from_csv()
+    lst = utils.load_centrality()
+    centralsCount = K * len(lst)
+    centrals = lst[:int(centralsCount)]
+    centralsLst = map(lambda x: x[0], centrals)
+    nearestCentral = utils.nearest_central(roads[int(source)], centralsLst, roads)
+    path_a = UC.ucs(roads[int(source)], roads[int(nearestCentral)], roads)
+    nearestCentralAir = int(utils.nearest_central_air(roads[int(target)], centralsLst, roads))
+    path_b = UC.ucs(roads[int(nearestCentralAir)], roads[int(target)], roads)
+    path_c = UC.ucs(abstractMap[nearestCentral], abstractMap[nearestCentralAir], abstractMap)
+
+    if path_a and path_b and path_c:
+        del path_a[-1]
+        del path_c[0]
+        del path_c[-1]
+        del path_b[0]
+        return path_a + path_c + path_b
+    else:
+        return UC.ucs(roads[int(source)], roads[int(target)], roads)

@@ -118,7 +118,7 @@ def buildCentrality():
     f.close()
 
 
-def build_abstract_space(centrals, roads):
+def build_abstract_map(centrals,roads):
     dict = {}
     # UC.nearest(roads[int(0)], 3, roads)
     for central in centrals:
@@ -128,7 +128,11 @@ def build_abstract_space(centrals, roads):
             abstractLst.append(graph.AbstractLink(item[1][1],int(item[0]),float(item[1][0]),-1))
         junc = roads[int(central)]
         dict[int(central)] = graph.Junction(junc.index,junc.lat,junc.lon, abstractLst)
-    pickle.dump(dict, open("abstractSpace.pkl", "wb"))
+    return dict
+
+#builds abstract space pickle
+def build_abstract_space(centrals, roads):
+    pickle.dump(build_abstract_map(centrals,roads), open("abstractSpace.pkl", "wb"))
 
 
 def build_data_set(roads):
@@ -198,16 +202,22 @@ def nearest_central_air(v,centrals,roads):
             minIndex = centralIndex
     return minIndex
 
-def base(source,target):
-    roads = load_map_from_csv()
-    return UC.ucs(roads[int(source)],roads[int(target)],roads)
 
-def better_waze(source,target,abstractMap,K):
-    roads = load_map_from_csv()
+def get_centrals_list(K):
     lst = utils.load_centrality()
     centralsCount = K * len(lst)
     centrals = lst[:int(centralsCount)]
     centralsLst = map(lambda x: x[0], centrals)
+    return centralsLst
+
+def base(source,target):
+    roads = load_map_from_csv()
+    return UC.ucs(roads[int(source)],roads[int(target)],roads)
+
+
+def better_waze(source,target,abstractMap,K):
+    roads = load_map_from_csv()
+    centralsLst = get_centrals_list(K)
     nearestCentral = utils.nearest_central(roads[int(source)], centralsLst, roads)
     path_a = UC.ucs(roads[int(source)], roads[int(nearestCentral)], roads)
     nearestCentralAir = int(utils.nearest_central_air(roads[int(target)], centralsLst, roads))
@@ -222,3 +232,48 @@ def better_waze(source,target,abstractMap,K):
         return path_a + path_c + path_b
     else:
         return UC.ucs(roads[int(source)], roads[int(target)], roads)
+
+
+def better_waze_experiment(source,target,abstractMap,roads,K):
+    centralsLst = get_centrals_list(K)
+    nearestCentral = utils.nearest_central(roads[int(source)], centralsLst, roads)
+    path_a , cost_a , created_a = UC.ucs_expirement(roads[int(source)], roads[int(nearestCentral)], roads)
+    nearestCentralAir = int(utils.nearest_central_air(roads[int(target)], centralsLst, roads))
+    path_b , cost_b , created_b = UC.ucs_expirement(roads[int(nearestCentralAir)], roads[int(target)], roads)
+    path_c , cost_c , created_c = UC.ucs_expirement(abstractMap[nearestCentral], abstractMap[nearestCentralAir], abstractMap)
+
+    if path_a and path_b and path_c:
+        del path_a[-1]
+        del path_c[0]
+        del path_c[-1]
+        del path_b[0]
+        path = path_a + path_b + path_c
+        cost = cost_a + cost_b + cost_c
+        created = created_a + created_b + created_c
+        return path , cost , created
+    else:
+        path , cost , created = UC.ucs_expirement(roads[int(source)], roads[int(target)], roads)
+        return path , cost , created + created_c
+
+def data_set_experiment():
+    K=[0.0025,0.005,0.01,0.05]
+    roads = load_map_from_csv()
+    exp = open('experiment.csv', 'w')
+    import csv
+    with open('dataSet.csv', 'rb') as f:
+        spamreader = csv.reader(f, delimiter=',', quotechar='|')
+        for row in spamreader:
+            print "<------------ "+ row[0] +" to " + row[1] + "------------>"
+            source = int(row[0])
+            target = int(row[1])
+            exp.write(str(source) + "," + str(target))
+            ucPath , ucCost , ucCreatedNodes = UC.ucs_expirement(roads[source],roads[target],roads)
+            exp.write("," + str(ucCreatedNodes) + "," + str(ucCost))
+            for k in K:
+                abstractMap = build_abstract_map(get_centrals_list(k),roads)
+                absPath , absCost, absCreated = better_waze_experiment(source, target,abstractMap,roads,k)
+                exp.write("," + str(absCreated) + "," + str(absCost))
+            exp.write("\n")
+    exp.close()
+
+

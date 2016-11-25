@@ -16,6 +16,7 @@ def children(point,roads,centrals=None):
 
 #maxSeen number of maximum
 def ucs_aux(node, goal, roads,maxAdjacents,centrals=None):
+    createdNodes = 1
     # Initialize the queue with the root node
     q = [(0, node.index, [])]
     # The list of seen items
@@ -32,10 +33,10 @@ def ucs_aux(node, goal, roads,maxAdjacents,centrals=None):
         # If we have found the goal, return the point
         if goal == None:
             if len(seen) >= maxAdjacents:
-                return (path,seen)
+                return (path,seen,None,createdNodes)
         else:
             if point == goal.index:
-                return (path,seen)
+                return (path,seen,cost,createdNodes)
 
         # Loop through the children
         for child in children(point,roads,centrals):
@@ -44,13 +45,20 @@ def ucs_aux(node, goal, roads,maxAdjacents,centrals=None):
             # If the child hasn't been seen
             if child[0] not in seen:
                 # Add it to the heap
+                createdNodes = createdNodes+1
                 heapq.heappush(q, (cost + child_cost, child[0], path))
         # Add the point to the seen items
         seen[point] = (cost,path)
-    return (None,seen)
+    return (None,seen,None,createdNodes)
 
+#returns path
 def ucs(start,goal,roads):
     return ucs_aux(start,goal,roads,0)[0]
+
+#returns path , cost , createdNodes
+def ucs_expirement(start,goal,roads):
+    res = ucs_aux(start,goal,roads,0)
+    return res[0], res[2],res[3]
 
 # returns a list of (index,path)
 def nearest(v,maxAdjacents,roads):

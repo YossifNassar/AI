@@ -12,6 +12,7 @@ import pickle
 import sys
 from ways import graph
 
+
 PATHS = 500000
 P = 0.99
 M = 0.1
@@ -19,8 +20,10 @@ DATA_SET_LENGTH = 20
 DATA_SET_ADGACENTS = 30000
 DATA_SET_OPERATIONS = 200
 
+
 def num_of_junctions(roads):
     return len(roads)
+
 
 def num_of_links(roads):
     cnt = 0
@@ -28,11 +31,14 @@ def num_of_links(roads):
         cnt += 1
     return cnt
 
+
 def link_type_histogram(roads):
     lst=[]
     for link in roads.iterlinks():
         lst.append(info.ROAD_TYPES[link.highway_type])
     return collections.Counter(lst)
+
+
 
 
 def link_distance(roads):
@@ -50,6 +56,7 @@ def link_distance(roads):
     avg = sum / num_of_junctions(roads)
     return [max,min,avg]
 
+
 def branch_factors(roads):
     max = 0
     min = 0
@@ -65,12 +72,15 @@ def branch_factors(roads):
     avg = sum / num_of_junctions(roads)
     return [max, min, avg]
 
+
 def air_distance(sourceIndex,destIndex,roads):
     sourceNode = roads[sourceIndex]
     destNode = roads[destIndex]
     delta_x = sourceNode.lat - destNode.lat
     delta_y = sourceNode.lon - destNode.lon
     return float(math.sqrt( math.pow(delta_x,2) + math.pow(delta_y,2)))
+
+
 
 
 def load_centrality(filename='centrality.csv'):
@@ -83,12 +93,18 @@ def load_centrality(filename='centrality.csv'):
     return lst
 
 
+
+
 def flip_coin():
     return numpy.random.choice(numpy.arange(0, 2), p=[1 - P, P])
 
 
+
+
 def random_node(roads):
     return random.choice(roads.junctions())
+
+
 
 
 def build_path(node, roads, allNodes):
@@ -98,11 +114,15 @@ def build_path(node, roads, allNodes):
         node = roads[link.target]
 
 
+
+
 def print_path(path):
     lst = []
     for j in path:
         lst.append(j.index)
     print lst
+
+
 
 
 def buildCentrality():
@@ -118,11 +138,13 @@ def buildCentrality():
     f.close()
 
 
+
+
 def build_abstract_map(centrals,roads):
     dict = {}
     # UC.nearest(roads[int(0)], 3, roads)
     for central in centrals:
-        lst = UC.nearest_with_cost(roads[int(central)], M * len(centrals), roads, centrals)
+        lst = UC.nearest_with_cost(roads[int(central)], M * len(centrals), roads,centrals)
         abstractLst=[]
         for item in lst:
             abstractLst.append(graph.AbstractLink(item[1][1],int(item[0]),float(item[1][0]),-1))
@@ -130,9 +152,12 @@ def build_abstract_map(centrals,roads):
         dict[int(central)] = graph.Junction(junc.index,junc.lat,junc.lon, abstractLst)
     return dict
 
+
 #builds abstract space pickle
-def build_abstract_space(centrals, roads):
-    pickle.dump(build_abstract_map(centrals,roads), open("abstractSpace.pkl", "wb"))
+def build_abstract_space(centrals, roads, file="abstractSpace.pkl"):
+    pickle.dump(build_abstract_map(centrals,roads), open(file, "wb"))
+
+
 
 
 def build_data_set(roads):
@@ -159,6 +184,8 @@ def build_data_set(roads):
     f.close()
 
 
+
+
 def test_dataset(roads):
     passed = True
     import csv
@@ -175,6 +202,8 @@ def test_dataset(roads):
         print "Test Failed!"
 
 
+
+
 def find_min(nearestCentrals):
     minCost = nearestCentrals[0][1][0]
     id = nearestCentrals[0][0]
@@ -185,10 +214,13 @@ def find_min(nearestCentrals):
     return id
 
 
+
+
 def nearest_central(v, centrals, roads):
-    nearest = UC.nearest_with_cost(v, sys.maxsize, roads)
+    nearest = UC.nearest_with_cost(v, 1, roads,centrals)
     nearestCentrals = filter(lambda pair: str(pair[0]) in centrals, nearest)
     return find_min(nearestCentrals)
+
 
 def nearest_central_air(v,centrals,roads):
     minDistance = utils.air_distance(int(centrals[0]),int(v.index),roads)
@@ -203,6 +235,8 @@ def nearest_central_air(v,centrals,roads):
     return minIndex
 
 
+
+
 def get_centrals_list(K):
     lst = utils.load_centrality()
     centralsCount = K * len(lst)
@@ -210,9 +244,12 @@ def get_centrals_list(K):
     centralsLst = map(lambda x: x[0], centrals)
     return centralsLst
 
+
 def base(source,target):
     roads = load_map_from_csv()
     return UC.ucs(roads[int(source)],roads[int(target)],roads)
+
+
 
 
 def better_waze(source,target,abstractMap,K):
@@ -223,7 +260,6 @@ def better_waze(source,target,abstractMap,K):
     nearestCentralAir = int(utils.nearest_central_air(roads[int(target)], centralsLst, roads))
     path_b = UC.ucs(roads[int(nearestCentralAir)], roads[int(target)], roads)
     path_c = UC.ucs(abstractMap[nearestCentral], abstractMap[nearestCentralAir], abstractMap)
-
     if path_a and path_b and path_c:
         del path_a[-1]
         del path_c[0]
@@ -234,31 +270,45 @@ def better_waze(source,target,abstractMap,K):
         return UC.ucs(roads[int(source)], roads[int(target)], roads)
 
 
+
+
 def better_waze_experiment(source,target,abstractMap,roads,K):
     centralsLst = get_centrals_list(K)
+    print "getting nearest central"
     nearestCentral = utils.nearest_central(roads[int(source)], centralsLst, roads)
-    path_a , cost_a , created_a = UC.ucs_expirement(roads[int(source)], roads[int(nearestCentral)], roads)
+    print "calculating path_a.."
+    cost_a , created_a = UC.ucs_expirement(roads[int(source)], roads[int(nearestCentral)], roads)
+    print "getting nearest air"
     nearestCentralAir = int(utils.nearest_central_air(roads[int(target)], centralsLst, roads))
-    path_b , cost_b , created_b = UC.ucs_expirement(roads[int(nearestCentralAir)], roads[int(target)], roads)
-    path_c , cost_c , created_c = UC.ucs_expirement(abstractMap[nearestCentral], abstractMap[nearestCentralAir], abstractMap)
+    print "calculating path_b"
+    cost_b , created_b = UC.ucs_expirement(roads[int(nearestCentralAir)], roads[int(target)], roads)
+    print "calculating path_c"
+    cost_c , created_c = UC.ucs_expirement(abstractMap[nearestCentral], abstractMap[nearestCentralAir], abstractMap)
 
-    if path_a and path_b and path_c:
-        del path_a[-1]
-        del path_c[0]
-        del path_c[-1]
-        del path_b[0]
-        path = path_a + path_b + path_c
+
+    if cost_c and cost_c and cost_c:
         cost = cost_a + cost_b + cost_c
         created = created_a + created_b + created_c
-        return path , cost , created
+        return cost , created
     else:
-        path , cost , created = UC.ucs_expirement(roads[int(source)], roads[int(target)], roads)
-        return path , cost , created + created_c
+        cost , created = UC.ucs_expirement(roads[int(source)], roads[int(target)], roads)
+        return  cost , created + created_c
+
 
 def data_set_experiment():
-    K=[0.0025,0.005,0.01,0.05]
+    K=[0.05]
+    files = {0.0025 : 'abstractSpace0025.pkl', 0.005: 'abstractSpace.pkl' ,
+             0.01 : 'abstractSpace01', 0.05:'abstractSpace05'}
     roads = load_map_from_csv()
-    exp = open('experiment.csv', 'w')
+
+    # for k in K:
+    #     print "for k=" + str(k) + "making abstract map..."
+    #     # abstractMaps[k] = build_abstract_map(get_centrals_list(k),roads)
+    #     pickle.dump(build_abstract_map(get_centrals_list(k),roads), open(files[k], "wb"))
+    #     print "Done!"
+
+
+    exp = open('experiment05.csv', 'w')
     import csv
     with open('dataSet.csv', 'rb') as f:
         spamreader = csv.reader(f, delimiter=',', quotechar='|')
@@ -267,13 +317,13 @@ def data_set_experiment():
             source = int(row[0])
             target = int(row[1])
             exp.write(str(source) + "," + str(target))
-            ucPath , ucCost , ucCreatedNodes = UC.ucs_expirement(roads[source],roads[target],roads)
+            ucCost , ucCreatedNodes = UC.ucs_expirement(roads[source],roads[target],roads)
             exp.write("," + str(ucCreatedNodes) + "," + str(ucCost))
             for k in K:
-                abstractMap = build_abstract_map(get_centrals_list(k),roads)
-                absPath , absCost, absCreated = better_waze_experiment(source, target,abstractMap,roads,k)
+                print "loading pickle"
+                import pickle as pkl
+                abstractMap = pkl.load(open(files[k], 'rb'))
+                absCost, absCreated = better_waze_experiment(source, target,abstractMap,roads,k)
                 exp.write("," + str(absCreated) + "," + str(absCost))
             exp.write("\n")
     exp.close()
-
-

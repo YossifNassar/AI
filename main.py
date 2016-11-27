@@ -4,10 +4,14 @@ Don't use this file for the actual work; only minimal code should be here.
 We just parse input and call methods from other modules.
 '''
 
+
 # do NOT import ways. This should be done from other files
 # simply import your modules and call the appropriate functions
 
+
 import utils
+
+
 
 
 def base(source, target):
@@ -15,9 +19,13 @@ def base(source, target):
     return utils.base(source, target)
 
 
+
+
 def betterWaze(source, target, abstractMap=None):
     'call function to find path using better ways algorithm, and return list of indices'
     return utils.better_waze(source, target, abstractMap, K=0.005)
+
+
 
 
 def dispatch(argv):
@@ -34,6 +42,9 @@ def dispatch(argv):
     print(' '.join(str(j) for j in path))
 
 
+
+
 if __name__ == '__main__':
     from sys import argv
     dispatch(argv)
+    # utils.data_set_experiment()
